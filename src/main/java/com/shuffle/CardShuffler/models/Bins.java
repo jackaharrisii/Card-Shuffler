@@ -2,17 +2,19 @@ package com.shuffle.CardShuffler.models;
 
 public class Bins {
 
-    Integer[] bins;
+    private Integer[] buckets;
 
-    public Bins(Integer[] bins) {
-        this.bins = new Integer[52];
+    public Bins() {
+        this.buckets = new Integer[52];
+        for (int i = 0; i < buckets.length; i++) this.buckets[i] = 0;
     }
 
-    public Integer[] getBins() {
-        return bins;
+    public Integer[] getBuckets() {
+        return buckets;
     }
 
-    public void setBins(Integer[] bins) {
-        this.bins = bins;
+    public void setBuckets(Integer[] buckets) {
+        this.buckets = buckets;
     }
+
 }
