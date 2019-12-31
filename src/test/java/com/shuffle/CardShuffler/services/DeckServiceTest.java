@@ -32,14 +32,31 @@ public class DeckServiceTest {
     }
 
     @Test
-    public void shuffleTest() {
-        Assert.assertEquals(1,2);
+    public void shuffleReturnsAFullDeckOf52Cards() {
+        deckService.shuffle(testDeck);
+        Assert.assertEquals(52, testDeck.getCardset().size());
+    }
+
+    @Test
+    public void shuffledDeckContainsASamplingOfTheOriginalCards(){
+        deckService.shuffle(testDeck);
+        Assert.assertTrue(testDeck.getCardset().contains("2c"));
+        Assert.assertTrue(testDeck.getCardset().contains("Ad"));
+        Assert.assertTrue(testDeck.getCardset().contains("10h"));
+        Assert.assertTrue(testDeck.getCardset().contains("Qs"));
+    }
+
+    @Test
+    public void shuffledDeckNotInTheOriginalOrder(){
+        ArrayList<String> unexpected = testDeck.getCardset();
+        deckService.shuffle(testDeck);
+        Assert.assertNotEquals(unexpected, testDeck.getCardset());
     }
 
     @Test
     public void splitDeckIntoTwoHalvesTest() {
-        ArrayList<String> expectedLeftHalf = new ArrayList<String>(Arrays.asList("1c","2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","1d","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad"));
-        ArrayList<String> expectedRightHalf = new ArrayList<String>(Arrays.asList("1h","2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","1s","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"));
+        ArrayList<String> expectedLeftHalf = new ArrayList<String>(Arrays.asList("2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad"));
+        ArrayList<String> expectedRightHalf = new ArrayList<String>(Arrays.asList("2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"));
         deckService.splitDeckIntoTwoHalves(testDeck);
         Assert.assertEquals(expectedLeftHalf, deckService.getLeftHalf());
         Assert.assertEquals(expectedRightHalf, deckService.getRightHalf());
@@ -47,44 +64,73 @@ public class DeckServiceTest {
 
     @Test
     public void mergeTwoHalvesTest() {
-
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        deckService.mergeTwoHalves();
+        Assert.assertEquals(52,deckService.getShuffledDeck().size());
+        Assert.assertTrue(deckService.getShuffledDeck().contains("2c"));
+        Assert.assertTrue(deckService.getShuffledDeck().contains("9d"));
+        Assert.assertTrue(deckService.getShuffledDeck().contains("Jh"));
+        Assert.assertTrue(deckService.getShuffledDeck().contains("As"));
     }
 
     @Test
     public void addLeftToDeckTest() {
-        Assert.assertEquals(1,2);
-
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        deckService.addLeftToDeck();
+        //check whether 1st card was added to shuffled deck
+        Assert.assertEquals("2c",deckService.getShuffledDeck().get(0));
+        //check whether 1st card was removed from left half
+        Assert.assertEquals("3c",deckService.getLeftHalf().get(0));
     }
 
     @Test
     public void addRightToDeckTest() {
-        Assert.assertEquals(1,2);
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        deckService.addRightToDeck();
+        //check whether 1st card was added to shuffled deck
+        Assert.assertEquals("2h",deckService.getShuffledDeck().get(0));
+        //check whether 1st card was removed from left half
+        Assert.assertEquals("3h",deckService.getRightHalf().get(0));    }
+
+    @Test
+    public void leftCardFallsIfRightHalfIsEmpty() {
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        deckService.getRightHalf().clear();
+        Assert.assertTrue(deckService.doesLeftCardFallFirst());
     }
 
     @Test
-    public void determineWhichCardFallsFirstTest() {
-        Assert.assertEquals(1,2);
+    public void rightCardFallsIfLeftHalfIsEmpty() {
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        deckService.getLeftHalf().clear();
+        Assert.assertFalse(deckService.doesLeftCardFallFirst());
+    }
+
+    @Test
+    public void randomCardFallsIfNeitherHalfIsEmpty() {
+        deckService.splitDeckIntoTwoHalves(testDeck);
+        Assert.assertNotNull(deckService.doesLeftCardFallFirst());
     }
 
     @Test
     public void resetDeckTest() {
-        testDeck.setCardset(new String[]{"one","two"});
+        testDeck.setCardset(new ArrayList<String>(Arrays.asList("one","two")));
         deckService.resetDeck(testDeck);
-        String[] expected = new String[]{"1c","2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","1d","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad",
-                "1h","2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","1s","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"};
-        Assert.assertArrayEquals(expected,testDeck.getCardset());
+        ArrayList<String> expected = new ArrayList<>(Arrays.asList("2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad",
+                "2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"));
+        Assert.assertEquals(expected,testDeck.getCardset());
     }
 
     @Test
     public void getLeftHalfTest() {
-        ArrayList<String> expectedLeftHalf = new ArrayList<String>(Arrays.asList("1c","2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","1d","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad"));
+        ArrayList<String> expectedLeftHalf = new ArrayList<String>(Arrays.asList("2c","3c","4c","5c","6c","7c","8c","9c","10c","Jc","Qc","Kc","Ac","2d","3d","4d","5d","6d","7d","8d","9d","10d","Jd","Qd","Kd","Ad"));
         deckService.splitDeckIntoTwoHalves(testDeck);
         Assert.assertEquals(expectedLeftHalf,deckService.getLeftHalf());
     }
 
     @Test
     public void getRightHalfTest() {
-        ArrayList<String> expectedRightHalf = new ArrayList<String>(Arrays.asList("1h","2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","1s","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"));
+        ArrayList<String> expectedRightHalf = new ArrayList<String>(Arrays.asList("2h","3h","4h","5h","6h","7h","8h","9h","10h","Jh","Qh","Kh","Ah","2s","3s","4s","5s","6s","7s","8s","9s","10s","Js","Qs","Ks","As"));
         deckService.splitDeckIntoTwoHalves(testDeck);
         Assert.assertEquals(expectedRightHalf,deckService.getRightHalf());
     }
